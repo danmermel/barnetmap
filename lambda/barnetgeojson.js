@@ -22,6 +22,7 @@ const handler = async function (event, context) {
       "features": []
     }
 
+    //this holds the largest combined total (based on the formula below)
     let maxcombined = 0 
 
     //to every returned postcode geojson add the count of gvi as a property and then push it into the above geojson collection
@@ -35,6 +36,8 @@ const handler = async function (event, context) {
       maxcombined = newgeo.properties.combinedgvi > maxcombined ? newgeo.properties.combinedgvi : maxcombined 
       fc.features.push(newgeo)
     }
+
+    console.log("maxcombined ", maxcombined)
     // make sure that all the combined gvis are a number between 1-100
     for (feature of fc.features) {
       feature.combinedgvi = (feature.combinedgvi / maxcombined) * 100

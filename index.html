@@ -69,7 +69,28 @@
         onEachFeature: function (feature, layer) {
           if (feature.properties) {
             //console.log("found ", feature.properties)
-            let composite = `postcode: ${feature.properties.postcodes}, gvi1: ${feature.properties.gvi1}, gvi2: ${feature.properties.gvi2}, gvi3: ${feature.properties.gvi3}, combined: ${feature.properties.combinedgvi}`
+            let composite = `
+                          <table border="1" cellpadding="6" cellspacing="0">
+                <thead>
+                  <tr>
+                    <th>Postcode</th>
+                    <th>GVI 1</th>
+                    <th>GVI 2</th>
+                    <th>GVI 3</th>
+                    <th>Combined GVI</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>${feature.properties.postcodes}</td>
+                    <td>${feature.properties.gvi1}</td>
+                    <td>${feature.properties.gvi2}</td>
+                    <td>${feature.properties.gvi3}</td>
+                    <td>${feature.properties.combinedgvi}</td>
+                  </tr>
+                </tbody>
+              </table>`
+              
             layer.bindPopup(composite);
 
           }
