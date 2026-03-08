@@ -110,8 +110,15 @@ for (i = 1; i < lines.length; i++) {
   if (typeof obj[GVI] === 'string' ) {
     obj[GVI] = 0
     }
+  
+    //skip rows that have a voter id of '--0
+  if(obj["voter number"] == "'--0") {
+    console.log("found dodgy voter number.. skipping")
+    continue
+  }
 
   // write a row the database
+  //console.log("inserting", obj)
   const insert = database.prepare(`
     INSERT INTO gvi (
       id,
