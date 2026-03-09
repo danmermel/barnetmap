@@ -6,143 +6,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <script src="https://unpkg.com/leaflet@1.9/dist/leaflet.js"></script>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9/dist/leaflet.css" />
- <style>
-    html,
-    body {
-      height: 100%;
-      padding: 0;
-      margin: 0;
-    }
-
-    .column {
-      float: left;
-      /* height: 300px;
-      Should be removed. Only for demonstration */
-    }
-
-    .left {
-      width: 10%;
-    }
-
-    .right {
-      width: 90%;
-    }
-
-    /* Clear floats after the columns */
-    .row:after {
-      content: "";
-      display: table;
-      clear: both;
-    }
-
-    #map {
-      /* configure the size of the map */
-      width: 90%;
-      height: 100%;
-    }
-  </style>
-</head>
-
-<body>
-  <div id="map"></div>
-  <script>
-    // initialize Leaflet
-    var map = L.map('map').setView({ lon: -0.16979724659305964, lat: 51.61133987784395 }, 15);
-
-    // add the OpenStreetMap tiles
-    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      maxZoom: 19,
-      attribution: '&copy; <a href="https://openstreetmap.org/copyright">OpenStreetMap contributors</a>'
-    }).addTo(map);
-
-    async function load_postcodes() {
-      let url = 'https://4pltjukcz2sjyrf7cpg4eoaunm0zhcwn.lambda-url.eu-west-1.on.aws';
-      const response = await fetch(url)
-      const postcodes = await response.json();
-      //console.log(load_postcodes);
-      return postcodes;
-    }
-
-    function getColor(d) {
-      return d > 80 ? '#E53935' :
-        d > 60 ? '#EF5350' :
-          d > 40 ? '#E57373' :
-            d > 20 ? '#EF9A9A' :
-              '#FFCDD2';
-    }
-
-    function style(feature) {
-      return {
-        fillColor: getColor(feature.properties.combinedgvi),
-        weight: 2,
-        opacity: 1,
-        color: 'white',
-        dashArray: '3',
-        fillOpacity: 0.7
-      };
-    }
-
-    function buildLayers(json) {
-        L.geoJson(json, {
-        style: style,
-        onEachFeature: function (feature, layer) {
-          if (feature.properties) {
-            //console.log("found ", feature.properties)
-            let composite = `
-                          <table border="1" cellpadding="6" cellspacing="0">
-                <thead>
-                  <tr>
-                    <th>Postcode</th>
-                    <th>GVI 1</th>
-                    <th>GVI 2</th>
-                    <th>GVI 3</th>
-                    <th>Combined GVI</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td>${feature.properties.postcodes}</td>
-                    <td>${feature.properties.gvi1}</td>
-                    <td>${feature.properties.gvi2}</td>
-                    <td>${feature.properties.gvi3}</td>
-                    <td>${feature.properties.combinedgvi}</td>
-                  </tr>
-                </tbody>
-              </table>`
-              
-            layer.bindPopup(composite);
-
-          }
-        }
-      }).addTo(map);
-    }
-
-
-    async function main() {
-      const json = await load_postcodes();
-      buildLayers (json)
-    }
-
-    main();
-
-    // show the scale bar on the lower left corner
-    L.control.scale({ imperial: true, metric: true }).addTo(map);
-
-  </script>
-</body>
-
-</html>
-
-
-
-<!DOCTYPE HTML>
-<html lang="en">
-
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <script src="https://unpkg.com/leaflet@1.9/dist/leaflet.js"></script>
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9/dist/leaflet.css" />
   <style>
     html,
     body {
@@ -184,7 +47,7 @@
   <div class="column left">
     <select id="dataoptions" onchange="changeData()">
       <option value="gvi" selected>GVI</option>
-      <option value="coverage" >Coverage</option>
+      <option value="coverage">Coverage</option>
     </select>
   </div>
   <div class="column right" id="map"></div>
@@ -227,10 +90,35 @@
       };
     }
 
-    function getComposite(properties) {
+    function changeData() {
+      //remove all layers
+      map.removeLayer(gvilayer)
+      map.removeLayer(coveragelayer)
+
+      var selectedValue = document.getElementById("dataoptions").value;
+      console.log(selectedValue)
       switch (document.getElementById("dataoptions").value) {
         case "gvi":
-          return `<table border="1" cellpadding="6" cellspacing="0">
+          gvilayer.addTo(map)
+          break
+        case "coverage":
+          coveragelayer.addTo(map)
+          break
+      }
+    }
+
+
+    async function main() {
+      json = await load_postcodes();
+
+      console.log("building layers")
+
+      gvilayer = L.geoJson(json, {
+        style: style,
+        onEachFeature: function (feature, layer) {
+          if (feature.properties) {
+            //console.log("found ", feature.properties)
+            let composite = `<table border="1" cellpadding="6" cellspacing="0">
                 <thead>
                   <tr>
                     <th>Postcode</th>
@@ -242,17 +130,27 @@
                 </thead>
                 <tbody>
                   <tr>
-                    <td>${properties.postcodes}</td>
-                    <td>${properties.gvi1}</td>
-                    <td>${properties.gvi2}</td>
-                    <td>${properties.gvi3}</td>
-                    <td>${properties.combinedgvi}</td>
+                    <td>${feature.properties.postcodes}</td>
+                    <td>${feature.properties.gvi1}</td>
+                    <td>${feature.properties.gvi2}</td>
+                    <td>${feature.properties.gvi3}</td>
+                    <td>${feature.properties.combinedgvi}</td>
                   </tr>
                 </tbody>
               </table>`
+            layer.bindPopup(composite);
 
-          case "coverage": 
-              return `<table border="1" cellpadding="6" cellspacing="0">
+          }
+        }
+      })
+      //console.log(gvilayer)
+
+      coveragelayer = L.geoJson(json, {
+        style: style,
+        onEachFeature: function (feature, layer) {
+          if (feature.properties) {
+            //console.log("found ", feature.properties)
+            let composite = `<table border="1" cellpadding="6" cellspacing="0">
                 <thead>
                   <tr>
                     <th>Postcode</th>
@@ -264,51 +162,27 @@
                 </thead>
                 <tbody>
                   <tr>
-                    <td>${properties.postcodes}</td>
-                    <td>${properties.gvi1}</td>
-                    <td>${properties.gvi2}</td>
-                    <td>${properties.gvi3}</td>
-                    <td>${properties.combinedgvi}</td>
+                    <td>${feature.properties.postcodes}</td>
+                    <td>${feature.properties.gvi1}</td>
+                    <td>${feature.properties.gvi2}</td>
+                    <td>${feature.properties.gvi3}</td>
+                    <td>${feature.properties.combinedgvi}</td>
                   </tr>
                 </tbody>
               </table>`
-
-            default:
-              //do nothing
-              break
-
-      }
-
-    }
-
-    function populateMap(json) {
-      L.geoJson(json, {
-        style: style,
-        onEachFeature: function (feature, layer) {
-          if (feature.properties) {
-            //console.log("found ", feature.properties)
-            let composite = getComposite(feature.properties)
             layer.bindPopup(composite);
 
           }
         }
-      }).addTo(map);
+      })
+
+      gvilayer.addTo(map)
     }
 
-    function changeData() {
-      var selectedValue = document.getElementById("dataoptions").value;
-      console.log(selectedValue)
-      populateMap(json)
-    }
+    let json = {} //global variables
+    let gvilayer
+    let coveragelayer
 
-
-    async function main() {
-      json = await load_postcodes();
-      populateMap(json)
-
-    }
-
-    let json = {} //global variable
     main()
 
 
