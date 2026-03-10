@@ -46,8 +46,8 @@
 <body>
   <div class="column left">
     <select id="dataoptions" onchange="changeData()">
-      <option value="gvi" selected>GVI</option>
-      <option value="coverage">Coverage</option>
+      <option value="gvi" >GVI</option>
+      <option value="coverage" selected>Coverage</option>
     </select>
   </div>
   <div class="column right" id="map"></div>
@@ -79,16 +79,7 @@
               '#FFCDD2';
     }
 
-    function style(feature) {
-      return {
-        fillColor: getColor(feature.properties.combinedgvi),
-        weight: 2,
-        opacity: 1,
-        color: 'white',
-        dashArray: '3',
-        fillOpacity: 0.7
-      };
-    }
+    
 
     function changeData() {
       //remove all layers
@@ -114,7 +105,16 @@
       console.log("building layers")
 
       gvilayer = L.geoJson(json, {
-        style: style,
+        style: function style(feature) {
+      return {
+        fillColor: getColor(feature.properties.combinedgvi),
+        weight: 2,
+        opacity: 1,
+        color: 'white',
+        dashArray: '3',
+        fillOpacity: 0.7
+      };
+    },
         onEachFeature: function (feature, layer) {
           if (feature.properties) {
             //console.log("found ", feature.properties)
@@ -146,7 +146,16 @@
       //console.log(gvilayer)
 
       coveragelayer = L.geoJson(json, {
-        style: style,
+        style: function style(feature) {
+      return {
+        fillColor: getColor(feature.properties.canvass_attempted_percentage),
+        weight: 2,
+        opacity: 1,
+        color: 'white',
+        dashArray: '3',
+        fillOpacity: 0.7
+      };
+    },
         onEachFeature: function (feature, layer) {
           if (feature.properties) {
             //console.log("found ", feature.properties)
@@ -154,19 +163,16 @@
                 <thead>
                   <tr>
                     <th>Postcode</th>
-                    <th>blah 1</th>
-                    <th>blah 2</th>
-                    <th>blah 3</th>
-                    <th>blah GVI</th>
+                    <th>Canvass Attempted %</th>
+                    <th>Canvass Success %</th>
                   </tr>
                 </thead>
                 <tbody>
                   <tr>
                     <td>${feature.properties.postcodes}</td>
-                    <td>${feature.properties.gvi1}</td>
-                    <td>${feature.properties.gvi2}</td>
-                    <td>${feature.properties.gvi3}</td>
-                    <td>${feature.properties.combinedgvi}</td>
+                    <td>${feature.properties.canvass_attempted_percentage.toFixed(0)} (${feature.properties.canvass_attempted}/${feature.properties.total_voters}) </td>
+                    <td>${feature.properties.canvass_success_percentage.toFixed(0)} (${feature.properties.canvass_success}/${feature.properties.total_voters})</td>
+
                   </tr>
                 </tbody>
               </table>`
@@ -176,7 +182,7 @@
         }
       })
 
-      gvilayer.addTo(map)
+      coveragelayer.addTo(map)
     }
 
     let json = {} //global variables
