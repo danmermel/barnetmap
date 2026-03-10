@@ -35,41 +35,17 @@ database.exec(`
   ) STRICT
 `);
 
-const str = fs.readFileSync('./data.csv', { encoding: 'utf8' })
-const lines = str.split('\n')
-// extract headings by splitting the first line by , - 
-// ignoring blank column headings
-headings = lines[0].split(',').map((s) => {
-  return s.toLowerCase()
-}).filter((s) => {
-  if (s.length > 0) {
-    return true
-  }
-}).map((s) => {
-  return s.replace(/^"/, "").replace(/"$/, "")
-})
-
-// for each line in the file
-for (i = 1; i < lines.length; i++) {
-  //console.log('Processing line ', i)
-  let l = lines[i]
-  if (l.length === 0) {
-    continue
-  }
-
+function preprocessLine(l) {
   // find double-quoted strings
   const matches = l.match(/"[^"]+"/g)
   // get rid of commas in double-quoted strings
   for (m in matches) {
     l = l.replace(matches[m], matches[m].replace(",", ""))
   }
+  return l
+}
 
-  // split the line into columns
-  const cols = l.split(',')
-  if (cols.length != headings.length) {
-    console.log("found shonky line... skipping", i)
-    continue
-  }
+async function writetodb(cols) {
   // loop through each column
   const obj = {}
   for (h in headings) {
@@ -107,15 +83,16 @@ for (i = 1; i < lines.length; i++) {
   const GVI = 'barnet london borough council election (2026-may-07) most recent data - gvi'
   //console.log(obj[GVI])
 
-  if (typeof obj[GVI] === 'string' ) {
+  if (typeof obj[GVI] === 'string') {
     obj[GVI] = 0
-    }
-  
-    //skip rows that have a voter id of '--0
-  if(obj["voter number"] == "'--0") {
-    console.log("found dodgy voter number.. skipping")
-    continue
   }
+
+  //skip rows that have a voter id of '--0
+  if (obj["voter number"] == "'--0") {
+    console.log("found dodgy voter number.. skipping")
+    return
+  }
+
 
   // write a row the database
   //console.log("inserting", obj)
@@ -127,5 +104,67 @@ for (i = 1; i < lines.length; i++) {
       green_voting_intention,
       usual_party )
   VALUES (?,?,?,?,?)`);
-  insert.run(obj["voter number"], obj["post code"].replace(/ /g,""), obj["most recent attempt - date"], obj[GVI], obj["barnet london borough council election (2026-may-07) most recent data - usual party"] )
+  try {
+    insert.run(obj["voter number"], obj["post code"].replace(/ /g, ""), obj["most recent attempt - date"], obj[GVI], obj["barnet london borough council election (2026-may-07) most recent data - usual party"])
+
+  } catch (e) {
+    console.log("error inserting..", e)
+    console.log("obj is ", obj)
+
+  }
+
+}
+
+
+const str = fs.readFileSync('./minidata.csv', { encoding: 'utf8' })
+const lines = str.split('\n')
+// extract headings by splitting the first line by , - 
+// ignoring blank column headings
+// and removing the double quotes at the beginning and at the end
+let headings = lines[0].split(',').map((s) => {
+  return s.toLowerCase()
+}).filter((s) => {
+  if (s.length > 0) {
+    return true
+  }
+}).map((s) => {
+  return s.replace(/^"/, "").replace(/"$/, "")
+})
+
+var shonkyline = ""
+// for each line in the file
+console.log("have lines", lines.length)
+for (i = 1; i < lines.length; i++) {
+  console.log('Processing line ', i)
+  let l = lines[i]
+  if (l.length === 0) {
+    //ignore empty lines
+    continue
+  }
+  l = preprocessLine(l)
+
+  // split the line into columns
+  let cols = l.split(',')
+  if (cols.length != headings.length) {
+    console.log("found shonky line... buffering", i)
+    shonkyline += lines[i]
+    continue
+  } else {
+    if (shonkyline.length > 0) {
+      //console.log(" found this shonky line ", shonkyline)
+      shonkyline = preprocessLine(shonkyline)
+      cols = shonkyline.split(',')
+      if (cols.length == headings.length) {
+        //useful line
+        console.log("found this useful line.. ", cols)
+        writetodb(cols)
+      }
+      shonkyline = ""
+      continue
+    }
+  }
+  writetodb(cols)
+
+
+
 }
