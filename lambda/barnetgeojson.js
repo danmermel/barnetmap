@@ -7,6 +7,7 @@ const handler = async function (event, context) {
   ///console.log("params ", params)
   //console.log("preparing statement")
   try {
+    console.log("querying..")
     const query = database.prepare(`select gvi.postcode,  SUM(CASE WHEN green_voting_intention = 0 THEN 1 ELSE 0 END) AS gvi0, 
                                                           SUM(CASE WHEN green_voting_intention = 1 THEN 1 ELSE 0 END) AS gvi1, 
                                                           SUM(CASE WHEN green_voting_intention = 2 THEN 1 ELSE 0 END) AS gvi2, 
@@ -14,11 +15,12 @@ const handler = async function (event, context) {
                                                           SUM(CASE WHEN green_voting_intention = 4 THEN 1 ELSE 0 END) AS gvi4, 
                                                           SUM(CASE WHEN green_voting_intention = 5 THEN 1 ELSE 0 END) AS gvi5,
                                                           COUNT(id) as total_voters,
-                                                          SUM(CASE WHEN last_canvassed_date != "<NO RECORD>" THEN 1 ELSE 0 END) as canvass_attempted,
+                                                          SUM(CASE WHEN last_canvassed_date != '<NO RECORD>' THEN 1 ELSE 0 END) as canvass_attempted,
                                                           SUM(CASE WHEN last_canvassed_success = 'Y' THEN 1 ELSE 0 END) as canvass_success, 
                                                           geojson from gvi join geo on geo.postcode = gvi.postcode group by 1`)
     var ret = query.all()
-
+    
+    console.log("query success: ", ret)
     //we create one single geojson object with all the postcodes in it, so that it can be rendered directly on a map
     const fc = {
       "type": "FeatureCollection",
@@ -30,6 +32,7 @@ const handler = async function (event, context) {
 
     //to every returned postcode geojson add the count of gvi as a property and then push it into the above geojson collection
     // not returning 0, 4, 5 in the properties
+    console.log("making properties")
     for (r of ret) {
       newgeo = JSON.parse(r.geojson)
       newgeo.properties.gvi1 = r.gvi1

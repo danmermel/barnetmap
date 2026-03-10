@@ -119,7 +119,7 @@ async function writetodb(cols) {
 }
 
 
-const str = fs.readFileSync('./minidata.csv', { encoding: 'utf8' })
+const str = fs.readFileSync('./data.csv', { encoding: 'utf8' })
 const lines = str.split('\n')
 // extract headings by splitting the first line by , - 
 // ignoring blank column headings
