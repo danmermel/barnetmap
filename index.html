@@ -14,16 +14,45 @@
       margin: 0;
     }
 
+    .column {
+      float: left;
+      /* height: 300px;
+      Should be removed. Only for demonstration */
+    }
+
+    .left {
+      width: 10%;
+    }
+
+    .right {
+      width: 90%;
+    }
+
+    /* Clear floats after the columns */
+    .row:after {
+      content: "";
+      display: table;
+      clear: both;
+    }
+
     #map {
       /* configure the size of the map */
-      width: 100%;
+      width: 90%;
       height: 100%;
     }
   </style>
 </head>
 
 <body>
-  <div id="map"></div>
+  <div class="column left">
+    <select id="dataoptions" onchange="changeData()">
+      <option value="gvi" >GVI</option>
+      <option value="coverage" selected>Coverage</option>
+    </select>
+  </div>
+  <div class="column right" id="map"></div>
+
+
   <script>
     // initialize Leaflet
     var map = L.map('map').setView({ lon: -0.16979724659305964, lat: 51.61133987784395 }, 15);
@@ -50,7 +79,33 @@
               '#FFCDD2';
     }
 
-    function style(feature) {
+    
+
+    function changeData() {
+      //remove all layers
+      map.removeLayer(gvilayer)
+      map.removeLayer(coveragelayer)
+
+      var selectedValue = document.getElementById("dataoptions").value;
+      console.log(selectedValue)
+      switch (document.getElementById("dataoptions").value) {
+        case "gvi":
+          gvilayer.addTo(map)
+          break
+        case "coverage":
+          coveragelayer.addTo(map)
+          break
+      }
+    }
+
+
+    async function main() {
+      json = await load_postcodes();
+
+      console.log("building layers")
+
+      gvilayer = L.geoJson(json, {
+        style: function style(feature) {
       return {
         fillColor: getColor(feature.properties.combinedgvi),
         weight: 2,
@@ -59,18 +114,11 @@
         dashArray: '3',
         fillOpacity: 0.7
       };
-    }
-
-
-    async function main() {
-      const json = await load_postcodes();
-      L.geoJson(json, {
-        style: style,
+    },
         onEachFeature: function (feature, layer) {
           if (feature.properties) {
             //console.log("found ", feature.properties)
-            let composite = `
-                          <table border="1" cellpadding="6" cellspacing="0">
+            let composite = `<table border="1" cellpadding="6" cellspacing="0">
                 <thead>
                   <tr>
                     <th>Postcode</th>
@@ -90,15 +138,60 @@
                   </tr>
                 </tbody>
               </table>`
-              
             layer.bindPopup(composite);
 
           }
         }
-      }).addTo(map);
+      })
+      //console.log(gvilayer)
+
+      coveragelayer = L.geoJson(json, {
+        style: function style(feature) {
+      return {
+        fillColor: getColor(feature.properties.canvass_attempted_percentage),
+        weight: 2,
+        opacity: 1,
+        color: 'white',
+        dashArray: '3',
+        fillOpacity: 0.7
+      };
+    },
+        onEachFeature: function (feature, layer) {
+          if (feature.properties) {
+            //console.log("found ", feature.properties)
+            let composite = `<table border="1" cellpadding="6" cellspacing="0">
+                <thead>
+                  <tr>
+                    <th>Postcode</th>
+                    <th>Canvass Attempted %</th>
+                    <th>Canvass Success %</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>${feature.properties.postcodes}</td>
+                    <td>${feature.properties.canvass_attempted_percentage.toFixed(0)} (${feature.properties.canvass_attempted}/${feature.properties.total_voters}) </td>
+                    <td>${feature.properties.canvass_success_percentage.toFixed(0)} (${feature.properties.canvass_success}/${feature.properties.total_voters})</td>
+
+                  </tr>
+                </tbody>
+              </table>`
+            layer.bindPopup(composite);
+
+          }
+        }
+      })
+
+      coveragelayer.addTo(map)
     }
 
-    main();
+    let json = {} //global variables
+    let gvilayer
+    let coveragelayer
+
+    main()
+
+
 
     // show the scale bar on the lower left corner
     L.control.scale({ imperial: true, metric: true }).addTo(map);
