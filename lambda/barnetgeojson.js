@@ -12,7 +12,10 @@ const handler = async function (event, context) {
                                                           SUM(CASE WHEN green_voting_intention = 2 THEN 1 ELSE 0 END) AS gvi2, 
                                                           SUM(CASE WHEN green_voting_intention = 3 THEN 1 ELSE 0 END) AS gvi3, 
                                                           SUM(CASE WHEN green_voting_intention = 4 THEN 1 ELSE 0 END) AS gvi4, 
-                                                          SUM(CASE WHEN green_voting_intention = 5 THEN 1 ELSE 0 END) AS gvi5, 
+                                                          SUM(CASE WHEN green_voting_intention = 5 THEN 1 ELSE 0 END) AS gvi5,
+                                                          COUNT(id) as total_voters,
+                                                          SUM(CASE WHEN last_canvassed_date != "<NO RECORD>" THEN 1 ELSE 0 END) as canvass_attempted,
+                                                          SUM(CASE WHEN last_canvassed_success = 'Y' THEN 1 ELSE 0 END) as canvass_success, 
                                                           geojson from gvi join geo on geo.postcode = gvi.postcode group by 1`)
     var ret = query.all()
 
@@ -33,7 +36,12 @@ const handler = async function (event, context) {
       newgeo.properties.gvi2 = r.gvi2
       newgeo.properties.gvi3 = r.gvi3
       newgeo.properties.combinedgvi = r.gvi1 * 10 + r.gvi2 * 5 //+ r.gvi3 
-      maxcombined = newgeo.properties.combinedgvi > maxcombined ? newgeo.properties.combinedgvi : maxcombined 
+      maxcombined = newgeo.properties.combinedgvi > maxcombined ? newgeo.properties.combinedgvi : maxcombined
+      newgeo.properties.total_voters = r.total_voters
+      newgeo.properties.canvass_attempted = r.canvass_attempted
+      newgeo.properties.canvass_success = r.canvass_success
+      newgeo.properties.canvass_attempted_percentage = r.canvass_attempted / r.total_voters  * 100 
+      newgeo.properties.canvass_success_percentage = r.canvass_success / r.total_voters  * 100
       fc.features.push(newgeo)
     }
 

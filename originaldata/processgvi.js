@@ -18,6 +18,7 @@ const types = {
   id: 'TEXT',
   postcode: 'TEXT',
   last_canvassed_date: 'TEXT',
+  last_canvassed_success: 'TEXT',
   green_voting_intention: 'INTEGER',
   usual_party: 'TEXT'
 }
@@ -30,6 +31,7 @@ database.exec(`
     id TEXT PRIMARY KEY,
     postcode TEXT,
     last_canvassed_date TEXT,
+    last_canvassed_success TEXT,
     green_voting_intention INTEGER,
     usual_party TEXT
   ) STRICT
@@ -101,11 +103,12 @@ async function writetodb(cols) {
       id,
       postcode,
       last_canvassed_date,
+      last_canvassed_success,
       green_voting_intention,
       usual_party )
-  VALUES (?,?,?,?,?)`);
+  VALUES (?,?,?,?,?,?)`);
   try {
-    insert.run(obj["voter number"], obj["post code"].replace(/ /g, ""), obj["most recent attempt - date"], obj[GVI], obj["barnet london borough council election (2026-may-07) most recent data - usual party"])
+    insert.run(obj["voter number"], obj["post code"].replace(/ /g, ""), obj["most recent attempt - date"], obj["most recent attempt - answered"], obj[GVI],  obj["barnet london borough council election (2026-may-07) most recent data - usual party"])
 
   } catch (e) {
     console.log("error inserting..", e)
