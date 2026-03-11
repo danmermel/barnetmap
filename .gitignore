@@ -8,4 +8,5 @@ api_url.js
 .DS_Store
 
 *.geojson
-data.csv
+*.csv
+*.txt
