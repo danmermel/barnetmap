@@ -5,7 +5,7 @@ terraform.tfvars
 terraform.tfstate
 terraform/terraform.tfstate.backup
 api_url.js
-*.sqlite
+.DS_Store
 
 *.geojson
 data.csv
