@@ -5,6 +5,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <script src="https://unpkg.com/leaflet@1.9/dist/leaflet.js"></script>
+  <script src="./api_url.js"></script>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9/dist/leaflet.css" />
   <style>
     html,
@@ -53,7 +54,7 @@
   <div class="column right" id="map"></div>
 
 
-  <script>
+  <script >
     // initialize Leaflet
     var map = L.map('map').setView({ lon: -0.16979724659305964, lat: 51.61133987784395 }, 15);
 
@@ -64,7 +65,7 @@
     }).addTo(map);
 
     async function load_postcodes() {
-      let url = 'https://4pltjukcz2sjyrf7cpg4eoaunm0zhcwn.lambda-url.eu-west-1.on.aws';
+      let url = api_url;
       const response = await fetch(url)
       const postcodes = await response.json();
       //console.log(load_postcodes);
@@ -78,8 +79,6 @@
             d > 20 ? '#EF9A9A' :
               '#FFCDD2';
     }
-
-    
 
     function changeData() {
       //remove all layers
