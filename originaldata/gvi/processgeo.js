@@ -14,7 +14,10 @@ database.exec(`
 `);
 
 
-const FILENAMES = ["./N11.geojson", "./N12.geojson", "./N20.geojson"]
+const FILENAMES = [
+  './N11.geojson',
+  './N12.geojson',
+  './N20.geojson']
 
 for (file of FILENAMES) {
 
