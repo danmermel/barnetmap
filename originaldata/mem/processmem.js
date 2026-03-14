@@ -46,7 +46,7 @@ for (line of lines) {
   const elements = line.split(",")
   const pcs = elements[elements.length - 1].split(" ") //just need the first part of the postcode
   if (pcs.length > 1) {
-    //try to avoid blanks
+    //try to avoid blanks that result when PC does not have a space.
     const pc = pcs[0]
     //console.log(pc)
     if (obj[pc]) {
