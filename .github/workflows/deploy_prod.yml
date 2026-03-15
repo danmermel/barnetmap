@@ -32,6 +32,9 @@ jobs:
           export X=`terraform output -json | jq .barnetgeojsonFunctionUrl.value`
           echo "X = $X"
           echo "var api_url = $X" > ../frontend/api_url.js
+          export X=`terraform output -json | jq .barnetmemFunctionUrl.value`
+          echo "X = $X"
+          echo "var mem_url = $X" >> ../frontend/api_url.js
 
       # Upload artifact frontend
       - name: Upload artifact
