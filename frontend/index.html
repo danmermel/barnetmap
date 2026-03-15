@@ -73,8 +73,8 @@
     }
 
     function getColor(d) {
-      return 
-        d > 80 ? '#E53935' :
+      //console.log(d)
+      return d > 80 ? '#E53935' :
         d > 60 ? '#EF5350' :
         d > 40 ? '#E57373' :
         d > 20 ? '#EF9A9A' :
@@ -139,12 +139,9 @@
                 </tbody>
               </table>`
             layer.bindPopup(composite);
-
           }
         }
       })
-      //console.log(gvilayer)
-
       coveragelayer = L.geoJson(json, {
         style: function style(feature) {
           return {
