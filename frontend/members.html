@@ -74,10 +74,10 @@
     }
 
     function getColor(d) {
-      return d > 80 ? '#E53935' :
-        d > 60 ? '#EF5350' :
-          d > 40 ? '#E57373' :
-            d > 20 ? '#EF9A9A' :
+      return d > 12 ? '#E53935' :
+        d > 9 ? '#EF5350' :
+          d > 6 ? '#E57373' :
+            d > 3 ? '#EF9A9A' :
               '#FFCDD2';
     }
 
@@ -122,12 +122,12 @@
                 <thead>
                   <tr>
                     <th>Postcode</th>
-                    <th>Member Count/th>
+                    <th>Member Count</th>
                   </tr>
                 </thead>
                 <tbody>
                   <tr>
-                    <td>${feature.properties.postcodes}</td>
+                    <td>${feature.properties.district}</td>
                     <td>${feature.properties.member_count}</td>
                   </tr>
                 </tbody>
