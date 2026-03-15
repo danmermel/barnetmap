@@ -15,48 +15,21 @@
       margin: 0;
     }
 
-    .column {
-      float: left;
-      /* height: 300px;
-      Should be removed. Only for demonstration */
-    }
-
-    .left {
-      width: 10%;
-    }
-
-    .right {
-      width: 90%;
-    }
-
-    /* Clear floats after the columns */
-    .row:after {
-      content: "";
-      display: table;
-      clear: both;
-    }
-
     #map {
       /* configure the size of the map */
-      width: 90%;
+      width: 100%;
       height: 100%;
     }
   </style>
 </head>
 
 <body>
-  <div class="column left">
-    <select id="dataoptions" onchange="changeData()">
-      <option value="gvi" >GVI</option>
-      <option value="coverage" selected>Coverage</option>
-    </select>
-  </div>
-  <div class="column right" id="map"></div>
+  <div id="map"></div>
 
 
-  <script >
+  <script>
     // initialize Leaflet
-    var map = L.map('map').setView({ lon: -0.16979724659305964, lat: 51.61133987784395 }, 15);
+    var map = L.map('map').setView({ lon: -0.2152903422555861, lat: 51.613290292918784 }, 12);
 
     // add the OpenStreetMap tiles
     L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -65,11 +38,11 @@
     }).addTo(map);
 
     async function load_postcodes() {
-      console.log("fetching pcs")
-      let url = "https://i7m6zrce7mtkm2dohpbvrv7nh40czbgd.lambda-url.eu-west-1.on.aws/";
+      //console.log("fetching pcs")
+      let url = mem_url
       const response = await fetch(url)
       const postcodes = await response.json();
-      console.log("got pcs");
+      //console.log("got pcs");
       return postcodes;
     }
 
@@ -81,40 +54,22 @@
               '#FFCDD2';
     }
 
-    function changeData() {
-      //remove all layers
-      map.removeLayer(gvilayer)
-      map.removeLayer(coveragelayer)
-
-      var selectedValue = document.getElementById("dataoptions").value;
-      console.log(selectedValue)
-      switch (document.getElementById("dataoptions").value) {
-        case "gvi":
-          gvilayer.addTo(map)
-          break
-        case "coverage":
-          coveragelayer.addTo(map)
-          break
-      }
-    }
-
-
     async function main() {
       json = await load_postcodes();
 
-      console.log("building layers")
+      //console.log("building layers")
 
       memberlayer = L.geoJson(json, {
         style: function style(feature) {
-      return {
-        fillColor: getColor(feature.properties.member_percentage),
-        weight: 2,
-        opacity: 1,
-        color: 'white',
-        dashArray: '3',
-        fillOpacity: 0.7
-      };
-    },
+          return {
+            fillColor: getColor(feature.properties.member_percentage),
+            weight: 2,
+            opacity: 1,
+            color: 'white',
+            dashArray: '3',
+            fillOpacity: 0.7
+          };
+        },
         onEachFeature: function (feature, layer) {
           if (feature.properties) {
             //console.log("found ", feature.properties)
@@ -137,10 +92,6 @@
           }
         }
       })
-      //console.log(gvilayer)
-
-     
-
       memberlayer.addTo(map)
     }
 
@@ -148,9 +99,6 @@
     let memberlayer
 
     main()
-
-
-
     // show the scale bar on the lower left corner
     L.control.scale({ imperial: true, metric: true }).addTo(map);
 
