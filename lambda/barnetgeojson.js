@@ -51,7 +51,7 @@ const handler = async function (event, context) {
     console.log("maxcombined ", maxcombined)
     // make sure that all the combined gvis are a number between 1-100
     for (feature of fc.features) {
-      feature.combinedgvi = (feature.combinedgvi / maxcombined) * 100
+      feature.properties.combinedgvi = (feature.combinedgvi / maxcombined) * 100
     }
 
     return {
